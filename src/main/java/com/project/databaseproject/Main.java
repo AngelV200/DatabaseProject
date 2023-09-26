@@ -14,7 +14,8 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader(RegisterController.class.getResource("Register.fxml"));
         Parent user = loader.load();
 
-        RegisterController controller = loader.getController();
+        RegisterController registerController = loader.getController();
+        registerController.set(new Database());
 
         Scene scene = new Scene(user);
         primaryStage.setScene(scene);
