@@ -69,6 +69,5 @@ public class RegisterController {
 
         Scene scene = new Scene(user);
         primaryStage.setScene(scene);
-        primaryStage.show();
     }
 }

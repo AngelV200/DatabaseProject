@@ -72,3 +72,11 @@ public class Database {
     }
 
 }
+
+/*
+Uses paramertized statements to prevent things like
+'b';
+DELETE FROM user WHERE email = 'b';
+
+so it treats this as an input to an email.
+ */
