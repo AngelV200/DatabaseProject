@@ -15,7 +15,7 @@ public class Main extends Application {
         Parent user = loader.load();
 
         RegisterController registerController = loader.getController();
-        registerController.set(new Database());
+        registerController.set(new Database(), primaryStage);
 
         Scene scene = new Scene(user);
         primaryStage.setScene(scene);

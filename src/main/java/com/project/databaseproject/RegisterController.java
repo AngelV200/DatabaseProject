@@ -1,16 +1,25 @@
 package com.project.databaseproject;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class RegisterController {
     private Database database;
+    private Stage primaryStage;
     @FXML
     private TextField usernameField, passwordField, firstNameField, lastNameField, emailField;
 
-    public void set(Database database) {
+    public void set(Database database, Stage primaryStage) {
         this.database = database;
+        this.primaryStage = primaryStage;
     }
 
     @FXML
@@ -48,5 +57,18 @@ public class RegisterController {
         alert.setContentText(msg);
 
         alert.showAndWait();
+    }
+
+    @FXML
+    private void change(ActionEvent e) throws IOException {
+        FXMLLoader loader = new FXMLLoader(LoginController.class.getResource("Login.fxml"));
+        Parent user = loader.load();
+
+        LoginController loginController = loader.getController();
+        loginController.set(new Database(), primaryStage);
+
+        Scene scene = new Scene(user);
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 }
