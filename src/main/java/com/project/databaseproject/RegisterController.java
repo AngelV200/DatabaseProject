@@ -60,7 +60,7 @@ public class RegisterController {
     }
 
     @FXML
-    private void change(ActionEvent e) throws IOException {
+    private void switchToLogin(ActionEvent e) throws IOException {
         FXMLLoader loader = new FXMLLoader(LoginController.class.getResource("Login.fxml"));
         Parent user = loader.load();
 
@@ -69,5 +69,6 @@ public class RegisterController {
 
         Scene scene = new Scene(user);
         primaryStage.setScene(scene);
+        primaryStage.show();
     }
 }
