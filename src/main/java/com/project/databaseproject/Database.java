@@ -71,6 +71,45 @@ public class Database {
                   // of the statements exceeded the maximum number of characters for a given variable.
     }
 
+    public int login(String username, String password) {
+        String checkUsernameQuery = "SELECT COUNT(*) FROM user WHERE username = ?";
+        String checkPasswordQuery = "SELECT password FROM user WHERE username = ?";
+
+        try {
+            PreparedStatement usernameStatement = connection.prepareStatement(checkUsernameQuery);
+            usernameStatement.setString(1, username);
+            ResultSet usernameResult = usernameStatement.executeQuery();
+
+            if (usernameResult.next()) {
+                int usernameCount = usernameResult.getInt(1);
+
+                if (usernameCount > 0) {
+                    PreparedStatement passwordStatement = connection.prepareStatement(checkPasswordQuery);
+                    passwordStatement.setString(1, username);
+                    ResultSet passwordResult = passwordStatement.executeQuery();
+
+                    if (passwordResult.next()) {
+                        String storedPassword = passwordResult.getString("password");
+
+                        if (storedPassword.equals(password)) {
+                            return 50;
+                        } else {
+                            return 2;
+                        }
+                    }
+                } else {
+                    return 1;
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+
 }
 
 /*
