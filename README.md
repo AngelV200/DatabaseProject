@@ -11,3 +11,7 @@ so that duplicate users are not registered.
 Troy:
 I made the login menu which uses alerts when a user has successfully or wrongly done something. If a user logins successfully, it brings the user back to the register menu. The user must fill in all of the fields in order to login. It uses a database connection
 to see if a username exists and if a password is associated with it.
+
+
+Youtube Video:
+https://www.youtube.com/watch?v=kUIstlY_u4s
