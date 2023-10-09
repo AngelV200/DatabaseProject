@@ -14,4 +14,4 @@ to see if a username exists and if a password is associated with it.
 
 
 Youtube Video:
-https://www.youtube.com/watch?v=kUIstlY_u4s
+[https://www.youtube.com/watch?v=kUIstlY_u4s](https://www.youtube.com/watch?v=LHu9YkPq2UU)https://www.youtube.com/watch?v=LHu9YkPq2UU
