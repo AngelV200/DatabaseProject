@@ -36,7 +36,7 @@ public class Database {
             checkUsernameStatement.close();
 
 
-            String checkEmailQuery = "SELECT COUNT(*) FROM user WHERE email = ?";
+            String checkEmailQuery = "SELECT COUNT(*) FROM user WHERE email = ?"; // counts the emails
             PreparedStatement checkEmailStatement = connection.prepareStatement(checkEmailQuery);
             checkEmailStatement.setString(1, email); // Sets the email to the first parameter which is the first question mark
             ResultSet emailResultSet = checkEmailStatement.executeQuery(); // Executes the query
