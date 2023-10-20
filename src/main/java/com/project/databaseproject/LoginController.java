@@ -33,7 +33,7 @@ public class LoginController {
     }
 
     @FXML
-    private void switchToRegister(ActionEvent e) throws IOException {
+    private void sC(ActionEvent e) throws IOException {
         String u = usernameField.getText();
         String p = passwordField.getText();
 
@@ -53,11 +53,11 @@ public class LoginController {
         }
 
         alertBox("login success");
-        FXMLLoader loader = new FXMLLoader(LoginController.class.getResource("Register.fxml"));
+        FXMLLoader loader = new FXMLLoader(LoginController.class.getResource("Store.fxml"));
         Parent user = loader.load();
 
-        RegisterController registerController = loader.getController();
-        registerController.set(new Database(), primaryStage);
+        StoreController storeController = loader.getController();
+        storeController.set(new Database(), primaryStage, usernameField.getText());
 
         Scene scene = new Scene(user);
         primaryStage.setScene(scene);

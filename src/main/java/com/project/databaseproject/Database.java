@@ -1,6 +1,8 @@
 package com.project.databaseproject;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Database {
     private Connection connection;
@@ -67,7 +69,7 @@ public class Database {
             e.printStackTrace();
         }
 
-        return 3; // One possible reason for an SQL statement not being able to successfully execute is because one
+        return -1; // One possible reason for an SQL statement not being able to successfully execute is because one
                   // of the statements exceeded the maximum number of characters for a given variable.
     }
 
@@ -106,7 +108,106 @@ public class Database {
             e.printStackTrace();
         }
 
-        return 0;
+        return -1;
+    }
+
+    public int insertItem(String title, String description, String category, int price, String username) {
+        // Add some logic to check if the user has posted 3 items today
+
+
+        String insertQuery = "INSERT INTO item (title, description, category, price, user_id) VALUES (?, ?, ?, ?, ?)";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
+            preparedStatement.setString(1, title);
+            preparedStatement.setString(2, description);
+            preparedStatement.setString(3, category);
+            preparedStatement.setInt(4, price);
+            preparedStatement.setString(5, username);
+            int updatedRows = preparedStatement.executeUpdate();
+            preparedStatement.close();
+
+            if (updatedRows == 1) // Item was successfully inserted
+                return 1;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return -1; // Some error occurred
+    }
+
+    public List<String> getAllItemsByCategory(String category) {
+        List<String> itemList = new ArrayList<>();
+        String selectQuery = "SELECT title, description, category, price FROM item WHERE category = ?";
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+            preparedStatement.setString(1, category); // Set the selected category as a parameter
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                String title = resultSet.getString("title");
+                String description = resultSet.getString("description");
+                int price = resultSet.getInt("price");
+
+                String itemString = title + "-" + description + "-" + price;
+                itemList.add(itemString);
+            }
+
+            resultSet.close();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return itemList;
+    }
+
+
+    public void insertReview(Date reportDate, String rating, String description, int itemId, String userId) {
+        try {
+            String insertReviewSQL = "INSERT INTO review (report_date, rating, description, item_id, user_id) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(insertReviewSQL)) {
+                preparedStatement.setDate(1, reportDate);
+                preparedStatement.setString(2, rating);
+                preparedStatement.setString(3, description);
+                preparedStatement.setInt(4, itemId);
+                preparedStatement.setString(5, userId);
+
+                System.out.println(reportDate + "-" + rating + "-" + description + "-" + itemId + "-" + userId);
+
+                preparedStatement.executeUpdate();
+                System.out.println("Review inserted successfully.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Error inserting review: " + e.getMessage());
+        }
+    }
+
+
+    public int getItemIdByAttributes(String title, String description, String category, int price, String userId) {
+        int itemId = -1;
+
+        String query = "SELECT item_id FROM item WHERE title = ? AND description = ? AND category = ? AND price = ? AND user_id = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, title);
+            preparedStatement.setString(2, description);
+            preparedStatement.setString(3, category);
+            preparedStatement.setInt(4, price);
+            preparedStatement.setString(5, userId);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                itemId = resultSet.getInt("item_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return itemId;
     }
 
 
@@ -119,3 +220,72 @@ DELETE FROM user WHERE email = 'b';
 
 so it treats this as an input to an email.
  */
+
+
+/***
+
+ Set Up mySql With App
+
+ 1.) Create a database connection with root user using local host
+     2) On root, make this table so just paste in on a query and run it
+     -- Create the "comp_440" schema
+     CREATE SCHEMA `comp_440`;
+
+     -- Use the "comp_440" schema
+     USE `comp_440`;
+
+     -- Create a table for user information
+     CREATE TABLE user (
+         username VARCHAR(255) NOT NULL PRIMARY KEY,
+         password VARCHAR(255),
+         firstName VARCHAR(255),
+         lastName VARCHAR(255),
+         email VARCHAR(255) UNIQUE
+     );
+
+     3) On root, create a user and grant it all priveledges:
+     -- Create a user 'USER' identified by 'userlogin'
+     CREATE USER 'user'@'localhost' IDENTIFIED BY 'userlogin';
+
+     -- Grant all privileges on the 'Arcade Warp Zone' schema to 'awz'
+     GRANT ALL PRIVILEGES ON `comp_440`.* TO 'user'@'localhost';
+
+     -- Reload the privileges
+     FLUSH PRIVILEGES;
+
+    4) Logout of root and login to user using userlogin
+
+ 5) Have these tables:
+     CREATE TABLE user (
+         username VARCHAR(255) NOT NULL PRIMARY KEY,
+         password VARCHAR(255),
+         firstName VARCHAR(255),
+         lastName VARCHAR(255),
+         email VARCHAR(255) UNIQUE
+     );
+
+     CREATE TABLE item (
+         item_id INT auto_increment PRIMARY KEY,
+         title VARCHAR(255) NOT NULL,
+         description TEXT,
+         category VARCHAR(255),
+         price INT,
+         user_id VARCHAR(255) NOT NULL,
+         FOREIGN KEY (user_id) REFERENCES user(username)
+     );
+
+     CREATE TABLE review (
+         review_id INT AUTO_INCREMENT PRIMARY KEY,
+         report_date DATE, -- Use DATE data type for report date
+         rating ENUM('excellent', 'good', 'fair', 'poor'), -- Rating should be ENUM
+         description TEXT,
+         item_id INT,
+         user_id VARCHAR(255),
+         FOREIGN KEY (item_id) REFERENCES item(item_id),
+         FOREIGN KEY (user_id) REFERENCES user(username)
+     );
+
+ 6) Populated items:
+
+
+ ***/

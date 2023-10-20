@@ -14,7 +14,7 @@
                 <TextField fx:id="usernameField" layoutX="290.0" layoutY="180.0" prefHeight="25.0" prefWidth="491.0" />
                 <Label layoutX="193.0" layoutY="236.0" prefHeight="25.0" prefWidth="406.0" text="Password" />
                 <TextField fx:id="passwordField" layoutX="290.0" layoutY="236.0" prefHeight="25.0" prefWidth="491.0" />
-                <Button layoutX="489.0" layoutY="586.0" mnemonicParsing="false" onAction="#switchToRegister" prefHeight="25.0" prefWidth="275.0" text="login" />
+                <Button layoutX="489.0" layoutY="586.0" mnemonicParsing="false" onAction="#sC" prefHeight="25.0" prefWidth="275.0" text="login" />
             </children>
         </AnchorPane>
     </center>

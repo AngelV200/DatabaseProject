@@ -21,17 +21,12 @@ public class Main extends Application {
 
         // Create a ScrollPane and set its content
         ScrollPane scrollPane = new ScrollPane(user);
-        scrollPane.setFitToWidth(true); // Allow horizontal scrolling
-        scrollPane.setFitToHeight(true); // Allow vertical scrolling
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS); // Show horizontal scrollbar
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS); // Show vertical scrollbar
 
         // Create the Scene with the ScrollPane
         Scene scene = new Scene(scrollPane);
 
         // Set the Scene to the primary stage
         primaryStage.setScene(scene);
-        primaryStage.setFullScreen(true); // Optional: Set the stage to full screen
         primaryStage.show();
     }
 

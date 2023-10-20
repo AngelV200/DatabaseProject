@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.project.databaseproject.StoreController">
+   <center>
+      <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label layoutX="120.0" layoutY="81.0" prefHeight="25.0" prefWidth="406.0" text="Search My Items By Category" />
+            <TextField fx:id="searchField" layoutX="289.0" layoutY="81.0" onKeyTyped="#find" prefHeight="25.0" prefWidth="491.0" />
+            <Button layoutX="877.0" layoutY="388.0" mnemonicParsing="false" onAction="#submit" prefHeight="25.0" prefWidth="275.0" text="Submit Rating" />
+            <ListView fx:id="itemList" layoutX="115.0" layoutY="170.0" onMouseClicked="#comCall" prefHeight="200.0" prefWidth="670.0" />
+            <Label layoutX="44.0" layoutY="493.0" prefHeight="25.0" prefWidth="406.0" text="insert an item:" />
+            <Label layoutX="54.0" layoutY="533.0" prefHeight="25.0" prefWidth="406.0" text="title" />
+            <TextField fx:id="t" layoutX="225.0" layoutY="533.0" prefHeight="25.0" prefWidth="491.0" />
+            <Label layoutX="44.0" layoutY="574.0" prefHeight="25.0" prefWidth="406.0" text="description" />
+            <TextField fx:id="d" layoutX="215.0" layoutY="574.0" prefHeight="25.0" prefWidth="491.0" />
+            <Label layoutX="54.0" layoutY="617.0" prefHeight="25.0" prefWidth="406.0" text="category" />
+            <TextField fx:id="c" layoutX="225.0" layoutY="617.0" prefHeight="25.0" prefWidth="491.0" />
+            <TextField fx:id="p" layoutX="196.0" layoutY="658.0" prefHeight="25.0" prefWidth="491.0" />
+            <Label layoutX="71.0" layoutY="658.0" prefHeight="25.0" prefWidth="406.0" text="price" />
+            <Button layoutX="896.0" layoutY="658.0" mnemonicParsing="false" onAction="#insert" prefHeight="25.0" prefWidth="275.0" text="INSERT ITEM" />
+            <Label layoutX="71.0" layoutY="138.0" prefHeight="25.0" prefWidth="406.0" text="Choose AN ITEM:" />
+            <Label layoutX="821.0" layoutY="138.0" prefHeight="25.0" prefWidth="406.0" text="WRITE A REVIEW BUT FIRST CHOOSE AN ITEM" />
+            <TextArea fx:id="review" layoutX="824.0" layoutY="163.0" prefHeight="200.0" prefWidth="200.0" />
+            <ComboBox fx:id="box" layoutX="1034.0" layoutY="170.0" prefHeight="25.0" prefWidth="160.0" />
+         </children>
+      </AnchorPane>
+   </center>
+</BorderPane>
