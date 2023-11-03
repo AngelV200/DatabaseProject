@@ -211,6 +211,129 @@ public class Database {
     }
 
 
+    public void drop() {
+        try {
+            // Drop the 'review' table if it exists and remove foreign key constraints
+            String dropTableReviewSQL = "DROP TABLE IF EXISTS review";
+            Statement dropTableStatement = connection.createStatement();
+            dropTableStatement.execute(dropTableReviewSQL);
+            dropTableStatement.close();
+
+            // Drop the 'item' table if it exists and remove foreign key constraint
+            String dropTableItemSQL = "DROP TABLE IF EXISTS item";
+            Statement dropItemStatement = connection.createStatement();
+            dropItemStatement.execute(dropTableItemSQL);
+            dropItemStatement.close();
+
+            // Drop the 'user' table if it exists
+            String dropTableUserSQL = "DROP TABLE IF EXISTS user";
+            Statement dropUserStatement = connection.createStatement();
+            dropUserStatement.execute(dropTableUserSQL);
+            dropUserStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void initializeDatabase() {
+        try {
+            drop();
+
+            // Create the 'user' table
+            String createTableUserSQL = "CREATE TABLE user ("
+                    + "username VARCHAR(255) NOT NULL PRIMARY KEY,"
+                    + "password VARCHAR(255),"
+                    + "firstName VARCHAR(255),"
+                    + "lastName VARCHAR(255),"
+                    + "email VARCHAR(255) UNIQUE"
+                    + ")";
+            Statement createUserStatement = connection.createStatement();
+            createUserStatement.execute(createTableUserSQL);
+            createUserStatement.close();
+
+            // Recreate the 'item' table with the foreign key constraint
+            String createTableItemSQL = "CREATE TABLE item ("
+                    + "item_id INT AUTO_INCREMENT PRIMARY KEY,"
+                    + "title VARCHAR(255) NOT NULL,"
+                    + "description TEXT,"
+                    + "category VARCHAR(255),"
+                    + "price INT,"
+                    + "user_id VARCHAR(255) NOT NULL,"
+                    + "FOREIGN KEY (user_id) REFERENCES user(username)"
+                    + ")";
+            Statement createItemStatement = connection.createStatement();
+            createItemStatement.execute(createTableItemSQL);
+            createItemStatement.close();
+
+            // Recreate the 'review' table with the foreign key constraint
+            String createTableReviewSQL = "CREATE TABLE review ("
+                    + "review_id INT AUTO_INCREMENT PRIMARY KEY,"
+                    + "report_date DATE,"
+                    + "rating ENUM('excellent', 'good', 'fair', 'poor'),"
+                    + "description TEXT,"
+                    + "item_id INT,"
+                    + "user_id VARCHAR(255),"
+                    + "FOREIGN KEY (item_id) REFERENCES item(item_id),"
+                    + "FOREIGN KEY (user_id) REFERENCES user(username)"
+                    + ")";
+            Statement createReviewStatement = connection.createStatement();
+            createReviewStatement.execute(createTableReviewSQL);
+            createReviewStatement.close();
+
+            // Insert sample data into the tables
+            insertSampleUserData();
+            insertSampleItemData();
+            insertSampleReviewData();
+
+            System.out.println("Database initialized.");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void insertSampleUserData() {
+        String insertUserSQL = "INSERT INTO user (username, password, firstName, lastName, email) VALUES "
+                + "('user1', 'password1', 'John', 'Doe', 'john.doe@example.com'), "
+                + "('user2', 'password2', 'Jane', 'Smith', 'jane.smith@example.com'), "
+                + "('user3', 'password3', 'Alice', 'Johnson', 'alice.johnson@example.com'), "
+                + "('user4', 'password4', 'Bob', 'Brown', 'bob.brown@example.com'), "
+                + "('user5', 'password5', 'Eve', 'Davis', 'eve.davis@example.com')";
+
+        executeSQLStatement(insertUserSQL);
+    }
+
+    private void insertSampleItemData() {
+        String insertItemSQL = "INSERT INTO item (title, description, category, price, user_id) VALUES "
+                + "('Item 1', 'Description 1', 'Category A', 100, 'user1'), "
+                + "('Item 2', 'Description 2', 'Category B', 200, 'user2'), "
+                + "('Item 3', 'Description 3', 'Category A', 150, 'user3'), "
+                + "('Item 4', 'Description 4', 'Category C', 120, 'user4'), "
+                + "('Item 5', 'Description 5', 'Category B', 180, 'user5')";
+
+        executeSQLStatement(insertItemSQL);
+    }
+
+    private void insertSampleReviewData() {
+        String insertReviewSQL = "INSERT INTO review (report_date, rating, description, item_id, user_id) VALUES "
+                + "('2023-11-01', 'excellent', 'Great item!', 1, 'user1'), "
+                + "('2023-11-02', 'good', 'Good item.', 2, 'user2'), "
+                + "('2023-11-03', 'fair', 'Not bad.', 3, 'user3'), "
+                + "('2023-11-04', 'poor', 'Terrible item and waste of money.', 4, 'user4'), "
+                + "('2023-11-05', 'excellent', 'Fantastic product!', 5, 'user5')";
+
+        executeSQLStatement(insertReviewSQL);
+    }
+
+    private void executeSQLStatement(String sql) {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 
 /*

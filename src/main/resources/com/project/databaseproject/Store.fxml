@@ -25,7 +25,7 @@
             <Label layoutX="54.0" layoutY="617.0" prefHeight="25.0" prefWidth="406.0" text="category" />
             <TextField fx:id="c" layoutX="225.0" layoutY="617.0" prefHeight="25.0" prefWidth="491.0" />
             <TextField fx:id="p" layoutX="196.0" layoutY="658.0" prefHeight="25.0" prefWidth="491.0" />
-            <Label layoutX="71.0" layoutY="658.0" prefHeight="25.0" prefWidth="406.0" text="price" />
+            <Label layoutX="71.0" layoutY="658.0" prefHeight="25.0" prefWidth="134.0" text="price" />
             <Button layoutX="896.0" layoutY="658.0" mnemonicParsing="false" onAction="#insert" prefHeight="25.0" prefWidth="275.0" text="INSERT ITEM" />
             <Label layoutX="71.0" layoutY="138.0" prefHeight="25.0" prefWidth="406.0" text="Choose AN ITEM:" />
             <Label layoutX="821.0" layoutY="138.0" prefHeight="25.0" prefWidth="406.0" text="WRITE A REVIEW BUT FIRST CHOOSE AN ITEM" />

@@ -60,6 +60,16 @@ public class RegisterController {
     }
 
     @FXML
+    private void drop() {
+        database.drop();
+    }
+
+    @FXML
+    private void inDB() {
+        database.initializeDatabase();
+    }
+
+    @FXML
     private void switchToLogin(ActionEvent e) throws IOException {
         FXMLLoader loader = new FXMLLoader(LoginController.class.getResource("Login.fxml"));
         Parent user = loader.load();
