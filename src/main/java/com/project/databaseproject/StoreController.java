@@ -88,4 +88,17 @@ public class StoreController {
         //System.out.println(utilDate + "-" + sqlDate);
         database.insertReview(sqlDate, (String)box.getValue(), review.getText(), database.getItemIdByAttributes(att[0], att[1], searchField.getText(), Integer.parseInt(att[2]), username), username);
     }
+
+    @FXML
+    private void switchToStats(ActionEvent e) throws IOException {
+        FXMLLoader loader = new FXMLLoader(LoginController.class.getResource("StoreStats.fxml"));
+        Parent user = loader.load();
+
+        StoreStatsController storeStatsController = loader.getController();
+        storeStatsController.set(database, primaryStage, username);
+
+        Scene scene = new Scene(user);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
 }

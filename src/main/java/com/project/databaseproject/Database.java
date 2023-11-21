@@ -3,6 +3,7 @@ package com.project.databaseproject;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Database {
     private Connection connection;
@@ -213,11 +214,17 @@ public class Database {
 
     public void drop() {
         try {
+            // Drop the 'favorites' table if it exists and remove foreign key constraints
+            String dropTableFavoritesSQL = "DROP TABLE IF EXISTS favorites";
+            Statement dropFavoritesStatement = connection.createStatement();
+            dropFavoritesStatement.execute(dropTableFavoritesSQL);
+            dropFavoritesStatement.close();
+
             // Drop the 'review' table if it exists and remove foreign key constraints
             String dropTableReviewSQL = "DROP TABLE IF EXISTS review";
-            Statement dropTableStatement = connection.createStatement();
-            dropTableStatement.execute(dropTableReviewSQL);
-            dropTableStatement.close();
+            Statement dropTableReviewStatement = connection.createStatement();
+            dropTableReviewStatement.execute(dropTableReviewSQL);
+            dropTableReviewStatement.close();
 
             // Drop the 'item' table if it exists and remove foreign key constraint
             String dropTableItemSQL = "DROP TABLE IF EXISTS item";
@@ -234,6 +241,7 @@ public class Database {
             e.printStackTrace();
         }
     }
+
 
     public void initializeDatabase() {
         try {
@@ -259,6 +267,7 @@ public class Database {
                     + "category VARCHAR(255),"
                     + "price INT,"
                     + "user_id VARCHAR(255) NOT NULL,"
+                    + "posted_date DATE NOT NULL,"
                     + "FOREIGN KEY (user_id) REFERENCES user(username)"
                     + ")";
             Statement createItemStatement = connection.createStatement();
@@ -280,10 +289,26 @@ public class Database {
             createReviewStatement.execute(createTableReviewSQL);
             createReviewStatement.close();
 
+            // Create the 'favorites' table
+            String createTableFavoritesSQL = "CREATE TABLE favorites ("
+                    + "favorite_id INT AUTO_INCREMENT PRIMARY KEY,"
+                    + "user_id_x VARCHAR(255) NOT NULL,"
+                    + "user_id_y VARCHAR(255) NOT NULL,"
+                    + "favorite_user_id VARCHAR(255) NOT NULL,"
+                    + "FOREIGN KEY (user_id_x) REFERENCES user(username),"
+                    + "FOREIGN KEY (user_id_y) REFERENCES user(username),"
+                    + "FOREIGN KEY (favorite_user_id) REFERENCES user(username),"
+                    + "UNIQUE KEY unique_favorite (user_id_x, user_id_y, favorite_user_id)"
+                    + ")";
+            Statement createFavoritesStatement = connection.createStatement();
+            createFavoritesStatement.execute(createTableFavoritesSQL);
+            createFavoritesStatement.close();
+
             // Insert sample data into the tables
-            insertSampleUserData();
-            insertSampleItemData();
-            insertSampleReviewData();
+            insertSampleUserData(20);
+            insertSampleItemData(20);
+            insertSampleReviewData(20);
+            insertSampleFavoritesData(20);
 
             System.out.println("Database initialized.");
 
@@ -292,39 +317,206 @@ public class Database {
         }
     }
 
+    private void insertSampleFavoritesData(int numTuples) throws SQLException {
+        int maxUserId = numTuples;
 
-    private void insertSampleUserData() {
-        String insertUserSQL = "INSERT INTO user (username, password, firstName, lastName, email) VALUES "
-                + "('user1', 'password1', 'John', 'Doe', 'john.doe@example.com'), "
-                + "('user2', 'password2', 'Jane', 'Smith', 'jane.smith@example.com'), "
-                + "('user3', 'password3', 'Alice', 'Johnson', 'alice.johnson@example.com'), "
-                + "('user4', 'password4', 'Bob', 'Brown', 'bob.brown@example.com'), "
-                + "('user5', 'password5', 'Eve', 'Davis', 'eve.davis@example.com')";
+        for (int i = 1; i <= numTuples; i++) {
+            String userX = "user" + (i % maxUserId + 1);
+            String userY = "user" + ((i + 1) % maxUserId + 1);
+            String favoriteUser = "user" + ((i + 2) % maxUserId + 1);
 
-        executeSQLStatement(insertUserSQL);
+            String insertFavoritesSQL = "INSERT INTO favorites (user_id_x, user_id_y, favorite_user_id) VALUES (?, ?, ?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(insertFavoritesSQL)) {
+                preparedStatement.setString(1, userX);
+                preparedStatement.setString(2, userY);
+                preparedStatement.setString(3, favoriteUser);
+                preparedStatement.executeUpdate();
+            }
+        }
     }
 
-    private void insertSampleItemData() {
-        String insertItemSQL = "INSERT INTO item (title, description, category, price, user_id) VALUES "
-                + "('Item 1', 'Description 1', 'Category A', 100, 'user1'), "
-                + "('Item 2', 'Description 2', 'Category B', 200, 'user2'), "
-                + "('Item 3', 'Description 3', 'Category A', 150, 'user3'), "
-                + "('Item 4', 'Description 4', 'Category C', 120, 'user4'), "
-                + "('Item 5', 'Description 5', 'Category B', 180, 'user5')";
 
-        executeSQLStatement(insertItemSQL);
+    private void insertSampleUserData(int numTuples) {
+        StringBuilder insertUserSQL = new StringBuilder("INSERT INTO user (username, password, firstName, lastName, email) VALUES ");
+
+        for (int i = 1; i <= numTuples; i++) {
+            insertUserSQL.append(String.format(
+                    "('user%d', 'password%d', 'FirstName%d', 'LastName%d', 'user%d@example.com')",
+                    i, i, i, i, i
+            ));
+
+            if (i < numTuples) {
+                insertUserSQL.append(", ");
+            }
+        }
+
+        executeSQLStatement(insertUserSQL.toString());
     }
 
-    private void insertSampleReviewData() {
-        String insertReviewSQL = "INSERT INTO review (report_date, rating, description, item_id, user_id) VALUES "
-                + "('2023-11-01', 'excellent', 'Great item!', 1, 'user1'), "
-                + "('2023-11-02', 'good', 'Good item.', 2, 'user2'), "
-                + "('2023-11-03', 'fair', 'Not bad.', 3, 'user3'), "
-                + "('2023-11-04', 'poor', 'Terrible item and waste of money.', 4, 'user4'), "
-                + "('2023-11-05', 'excellent', 'Fantastic product!', 5, 'user5')";
 
-        executeSQLStatement(insertReviewSQL);
+    private void insertSampleItemData(int numTuples) {
+        StringBuilder insertItemSQL = new StringBuilder("INSERT INTO item (title, description, category, price, user_id, posted_date) VALUES ");
+
+        Random random = new Random();
+
+        for (int i = 1; i <= numTuples; i++) {
+            // Ensure that the category is within the range 1-5
+            int category = (i % 5) + 1;
+            // Ensure that the day is within the range 1-3
+            int day = (i % 3) + 1;
+
+            // Create a pattern for the price every 3 iterations
+            int price = ((i - 1) / 3) * 100 + 100;
+
+            // Use the same user for each item
+            String userId = "user" + i;
+
+            // Introduce randomness for creating a duplicate entry
+            boolean createDuplicate = random.nextBoolean();
+
+            insertItemSQL.append(String.format(
+                    "('Item%d', 'Description%d', 'Category%d', %d, '%s', '2023-11-%02d')",
+                    i, i, category, price, userId, day
+            ));
+
+            if (createDuplicate && i < numTuples) {
+                // Add a duplicate entry for the same user on the same day
+                insertItemSQL.append(", ");
+                insertItemSQL.append(String.format(
+                        "('Item%d', 'Description%d_duplicate', 'Category%d', %d, '%s', '2023-11-%02d')",
+                        i, i, category, price, userId, day
+                ));
+            }
+
+            if (i < numTuples) {
+                insertItemSQL.append(", ");
+            }
+        }
+
+        executeSQLStatement(insertItemSQL.toString());
     }
+
+
+
+    private void insertSampleReviewData(int numTuples) {
+        StringBuilder insertReviewSQL = new StringBuilder("INSERT INTO review (report_date, rating, description, item_id, user_id) VALUES ");
+
+        for (int i = 1; i <= numTuples; i++) {
+            insertReviewSQL.append(String.format(
+                    "('2023-11-%02d', '%s', 'Review%d', %d, 'user%d')",
+                    i, (i % 4 == 0) ? "poor" : ((i % 4 == 1) ? "excellent" : ((i % 4 == 2) ? "good" : "fair")), i, i, i
+            ));
+
+            if (i < numTuples) {
+                insertReviewSQL.append(", ");
+            }
+        }
+
+        executeSQLStatement(insertReviewSQL.toString());
+    }
+
+
+
+    // Part3
+    // One
+    // Method to retrieve the most expensive items in each category as a List<String>
+    /*
+    Grouping items by category, calculating the max price for each category, and returning all items under each category that have the maximum price.
+    */
+    public List<String> getMostExpensiveItemsByCategory() {
+        List<String> mostExpensiveItems = new ArrayList<>();
+
+        try {
+            String sql = "SELECT category, MAX(price) AS max_price "
+                    + "FROM item "
+                    + "GROUP BY category";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    String category = resultSet.getString("category");
+                    int maxPrice = resultSet.getInt("max_price");
+
+                    // Retrieve all items under the category with the max price
+                    List<String> categoryItems = getCategoryItemsWithMaxPrice(category, maxPrice);
+
+                    // Append the category and its items to the result
+                    StringBuilder categoryInfo = new StringBuilder();
+                    categoryInfo.append("Category: ").append(category).append(", ");
+                    categoryInfo.append("Max Price: ").append(maxPrice).append(", ");
+                    categoryInfo.append("Items: ").append(String.join(", ", categoryItems));
+                    mostExpensiveItems.add(categoryInfo.toString());
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return mostExpensiveItems;
+    }
+
+    // Helper method to retrieve items in a specific category with the max price
+    private List<String> getCategoryItemsWithMaxPrice(String category, int maxPrice) {
+        List<String> categoryItems = new ArrayList<>();
+
+        try {
+            String sql = "SELECT * FROM item WHERE category = ? AND price = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, category);
+                preparedStatement.setInt(2, maxPrice);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        // Build the item information and add it to the list
+                        StringBuilder itemInfo = new StringBuilder();
+                        itemInfo.append("Title: ").append(resultSet.getString("title")).append(", ");
+                        itemInfo.append("Description: ").append(resultSet.getString("description")).append(", ");
+                        itemInfo.append("Price: ").append(resultSet.getInt("price")).append(", ");
+                        itemInfo.append("User ID: ").append(resultSet.getString("user_id"));
+                        categoryItems.add(itemInfo.toString());
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return categoryItems;
+    }
+
+    // Two
+    // Method to retrieve users who posted at least two items on the same day with specified categories
+    public List<String> getUsersWithMultipleItemsOnSameDay(String categoryX, String categoryY) {
+        List<String> usersWithMultipleItems = new ArrayList<>();
+
+        try {
+            String sql = "SELECT user_id "
+                    + "FROM item "
+                    + "WHERE (category = ? OR category = ?) "
+                    + "GROUP BY user_id, DATE_FORMAT(posted_date, '%Y-%m-%d') "
+                    + "HAVING COUNT(DISTINCT category) = 2";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, categoryX);
+                preparedStatement.setString(2, categoryY);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String userId = resultSet.getString("user_id");
+                        usersWithMultipleItems.add(userId);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return usersWithMultipleItems;
+    }
+
+    // Part 3 End
+
 
     private void executeSQLStatement(String sql) {
         try (Statement statement = connection.createStatement()) {
@@ -388,14 +580,16 @@ so it treats this as an input to an email.
      );
 
      CREATE TABLE item (
-         item_id INT auto_increment PRIMARY KEY,
+         item_id INT AUTO_INCREMENT PRIMARY KEY,
          title VARCHAR(255) NOT NULL,
          description TEXT,
          category VARCHAR(255),
          price INT,
          user_id VARCHAR(255) NOT NULL,
+         posted_date DATE NOT NULL,  -- Add the posted_date column
          FOREIGN KEY (user_id) REFERENCES user(username)
      );
+
 
      CREATE TABLE review (
          review_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -407,6 +601,18 @@ so it treats this as an input to an email.
          FOREIGN KEY (item_id) REFERENCES item(item_id),
          FOREIGN KEY (user_id) REFERENCES user(username)
      );
+
+     CREATE TABLE favorites (
+         favorite_id INT AUTO_INCREMENT PRIMARY KEY,
+         user_id_x VARCHAR(255) NOT NULL,
+         user_id_y VARCHAR(255) NOT NULL,
+         favorite_user_id VARCHAR(255) NOT NULL,
+         FOREIGN KEY (user_id_x) REFERENCES user(username),
+         FOREIGN KEY (user_id_y) REFERENCES user(username),
+         FOREIGN KEY (favorite_user_id) REFERENCES user(username),
+         UNIQUE KEY unique_favorite (user_id_x, user_id_y, favorite_user_id)
+     );
+
 
  6) Populated items:
 
