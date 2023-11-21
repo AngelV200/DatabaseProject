@@ -22,9 +22,9 @@ public class StoreStatsController {
     private Stage primaryStage;
     String username;
     @FXML
-    ListView<String> one, two;
+    ListView<String> one, two, three, four, five, six, seven, eight, nine, ten;
     @FXML
-    TextField threeTF, c1, c2;
+    TextField c1, c2, threeTF, fourTF, u1, u2;
 
 
     @FXML
@@ -38,6 +38,11 @@ public class StoreStatsController {
         this.primaryStage = primaryStage;
         this.username = username;
         oneFunction();
+        sixFunction();
+        sevenFunction();
+        eightFunction();
+        nineFunction();
+        tenFunction();
     }
 
 
@@ -52,6 +57,62 @@ public class StoreStatsController {
         List<String> items = database.getUsersWithMultipleItemsOnSameDay(c1.getText(), c2.getText());
 
         two.getItems().setAll(items);
+    }
+
+    @FXML
+    private void threeFunction() {
+        List<String> items = database.getUsersWithItemsOnlyExcellentOrGood(threeTF.getText());
+
+        three.getItems().setAll(items);
+    }
+
+    @FXML
+    private void fourFunction() {
+        List<String> items = database.getUsersWithMostItemsOnDate(fourTF.getText());
+
+        four.getItems().setAll(items);
+    }
+
+    @FXML
+    private void fiveFunction() {
+        List<String> items = database.getCommonFavorites(u1.getText(), u2.getText());
+
+        five.getItems().setAll(items);
+    }
+
+    @FXML
+    private void sixFunction() {
+        List<String> items = database.getUsersWithNoExcellentItems();
+
+        six.getItems().setAll(items);
+    }
+
+    @FXML
+    private void sevenFunction() {
+        List<String> items = database.getUsersWithoutPoorReviews();
+
+        seven.getItems().setAll(items);
+    }
+
+    @FXML
+    private void eightFunction() {
+        List<String> items = database.getUsersWithOnlyPoorReviews();
+
+        eight.getItems().setAll(items);
+    }
+
+    @FXML
+    private void nineFunction() {
+        List<String> items = database.getUsersWithNoPoorReviews();
+
+        nine.getItems().setAll(items);
+    }
+
+    @FXML
+    private void tenFunction() {
+        List<String> items = database.getUserPairsWithExcellentReviews();
+
+        ten.getItems().setAll(items);
     }
 
 

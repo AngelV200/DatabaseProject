@@ -1,6 +1,7 @@
 package com.project.databaseproject;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -115,8 +116,11 @@ public class Database {
     public int insertItem(String title, String description, String category, int price, String username) {
         // Add some logic to check if the user has posted 3 items today
 
+        // Get the current date
+        LocalDate currentDate = LocalDate.now();
+        Date postedDate = Date.valueOf(currentDate);
 
-        String insertQuery = "INSERT INTO item (title, description, category, price, user_id) VALUES (?, ?, ?, ?, ?)";
+        String insertQuery = "INSERT INTO item (title, description, category, price, user_id, posted_date) VALUES (?, ?, ?, ?, ?, ?)";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
             preparedStatement.setString(1, title);
@@ -124,6 +128,7 @@ public class Database {
             preparedStatement.setString(3, category);
             preparedStatement.setInt(4, price);
             preparedStatement.setString(5, username);
+            preparedStatement.setDate(6, postedDate);
             int updatedRows = preparedStatement.executeUpdate();
             preparedStatement.close();
 
@@ -305,10 +310,10 @@ public class Database {
             createFavoritesStatement.close();
 
             // Insert sample data into the tables
-            insertSampleUserData(20);
-            insertSampleItemData(20);
-            insertSampleReviewData(20);
-            insertSampleFavoritesData(20);
+            insertSampleUserData(200);
+            insertSampleItemData(200);
+            insertSampleReviewData(200);
+            insertSampleFavoritesData(200);
 
             System.out.println("Database initialized.");
 
@@ -318,12 +323,14 @@ public class Database {
     }
 
     private void insertSampleFavoritesData(int numTuples) throws SQLException {
+        Random random = new Random();
+
         int maxUserId = numTuples;
 
         for (int i = 1; i <= numTuples; i++) {
-            String userX = "user" + (i % maxUserId + 1);
-            String userY = "user" + ((i + 1) % maxUserId + 1);
-            String favoriteUser = "user" + ((i + 2) % maxUserId + 1);
+            String userX = "user" + (random.nextInt(maxUserId) + 1);
+            String userY = "user" + (random.nextInt(maxUserId) + 1);
+            String favoriteUser = "user" + (random.nextInt(maxUserId) + 1);
 
             String insertFavoritesSQL = "INSERT INTO favorites (user_id_x, user_id_y, favorite_user_id) VALUES (?, ?, ?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertFavoritesSQL)) {
@@ -334,7 +341,6 @@ public class Database {
             }
         }
     }
-
 
     private void insertSampleUserData(int numTuples) {
         StringBuilder insertUserSQL = new StringBuilder("INSERT INTO user (username, password, firstName, lastName, email) VALUES ");
@@ -352,7 +358,6 @@ public class Database {
 
         executeSQLStatement(insertUserSQL.toString());
     }
-
 
     private void insertSampleItemData(int numTuples) {
         StringBuilder insertItemSQL = new StringBuilder("INSERT INTO item (title, description, category, price, user_id, posted_date) VALUES ");
@@ -380,11 +385,12 @@ public class Database {
             ));
 
             if (createDuplicate && i < numTuples) {
-                // Add a duplicate entry for the same user on the same day
+                // Add a duplicate entry for the same user on the same day with a different category
+                int otherCategory = (category % 5) + 1; // Ensure a different category
                 insertItemSQL.append(", ");
                 insertItemSQL.append(String.format(
                         "('Item%d', 'Description%d_duplicate', 'Category%d', %d, '%s', '2023-11-%02d')",
-                        i, i, category, price, userId, day
+                        i, i, otherCategory, price, userId, day
                 ));
             }
 
@@ -396,19 +402,31 @@ public class Database {
         executeSQLStatement(insertItemSQL.toString());
     }
 
-
-
-    private void insertSampleReviewData(int numTuples) {
+    private void insertSampleReviewData(int numUsers) {
         StringBuilder insertReviewSQL = new StringBuilder("INSERT INTO review (report_date, rating, description, item_id, user_id) VALUES ");
 
-        for (int i = 1; i <= numTuples; i++) {
-            insertReviewSQL.append(String.format(
-                    "('2023-11-%02d', '%s', 'Review%d', %d, 'user%d')",
-                    i, (i % 4 == 0) ? "poor" : ((i % 4 == 1) ? "excellent" : ((i % 4 == 2) ? "good" : "fair")), i, i, i
-            ));
+        Random random = new Random();
 
-            if (i < numTuples) {
-                insertReviewSQL.append(", ");
+        for (int userId = 1; userId <= numUsers; userId++) {
+            int maxReviewsPerUser = random.nextInt(10) + 1; // Random maximum reviews per user
+
+            int numReviews = random.nextInt(maxReviewsPerUser) + 1; // Random number of reviews per user
+
+            for (int reviewIndex = 1; reviewIndex <= numReviews; reviewIndex++) {
+                int day = (reviewIndex % 3) + 1;
+
+                // Randomized review types with equal probability
+                String[] reviewTypes = {"poor", "excellent", "good", "fair"};
+                String rating = reviewTypes[random.nextInt(reviewTypes.length)];
+
+                insertReviewSQL.append(String.format(
+                        "('2023-11-%02d', '%s', 'Review%d by user%d', %d, 'user%d')",
+                        day, rating, reviewIndex, userId, userId, userId
+                ));
+
+                if (userId < numUsers || reviewIndex < numReviews) {
+                    insertReviewSQL.append(", ");
+                }
             }
         }
 
@@ -417,7 +435,8 @@ public class Database {
 
 
 
-    // Part3
+    // Part3------------------------------------------
+
     // One
     // Method to retrieve the most expensive items in each category as a List<String>
     /*
@@ -444,8 +463,13 @@ public class Database {
                     // Append the category and its items to the result
                     StringBuilder categoryInfo = new StringBuilder();
                     categoryInfo.append("Category: ").append(category).append(", ");
-                    categoryInfo.append("Max Price: ").append(maxPrice).append(", ");
-                    categoryInfo.append("Items: ").append(String.join(", ", categoryItems));
+                    categoryInfo.append("Max Price: ").append(maxPrice).append(",\n");
+
+                    // Append each item on a new line with a tab indentation
+                    for (String item : categoryItems) {
+                        categoryInfo.append("\t").append(item).append("\n");
+                    }
+
                     mostExpensiveItems.add(categoryInfo.toString());
                 }
             }
@@ -456,7 +480,7 @@ public class Database {
         return mostExpensiveItems;
     }
 
-    // Helper method to retrieve items in a specific category with the max price
+    // Helper method to retrieve item information in a specific category with the max price
     private List<String> getCategoryItemsWithMaxPrice(String category, int maxPrice) {
         List<String> categoryItems = new ArrayList<>();
 
@@ -468,13 +492,12 @@ public class Database {
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        // Build the item information and add it to the list
-                        StringBuilder itemInfo = new StringBuilder();
-                        itemInfo.append("Title: ").append(resultSet.getString("title")).append(", ");
-                        itemInfo.append("Description: ").append(resultSet.getString("description")).append(", ");
-                        itemInfo.append("Price: ").append(resultSet.getInt("price")).append(", ");
-                        itemInfo.append("User ID: ").append(resultSet.getString("user_id"));
-                        categoryItems.add(itemInfo.toString());
+                        // Append item information to the list
+                        String itemInfo = "Title: " + resultSet.getString("title") +
+                                ", Description: " + resultSet.getString("description") +
+                                ", Price: " + resultSet.getInt("price") +
+                                ", User ID: " + resultSet.getString("user_id");
+                        categoryItems.add(itemInfo);
                     }
                 }
             }
@@ -491,11 +514,17 @@ public class Database {
         List<String> usersWithMultipleItems = new ArrayList<>();
 
         try {
-            String sql = "SELECT user_id "
+            String sql = "SELECT user_id, category, title, DATE_FORMAT(posted_date, '%Y-%m-%d') AS posted_date "
                     + "FROM item "
-                    + "WHERE (category = ? OR category = ?) "
-                    + "GROUP BY user_id, DATE_FORMAT(posted_date, '%Y-%m-%d') "
-                    + "HAVING COUNT(DISTINCT category) = 2";
+                    + "WHERE user_id IN ("
+                    + "    SELECT user_id "
+                    + "    FROM item "
+                    + "    WHERE category IN (?, ?) "
+                    + "    GROUP BY user_id, DATE_FORMAT(posted_date, '%Y-%m-%d') "
+                    + "    HAVING COUNT(DISTINCT category) = 2 "
+                    + ") "
+                    + "ORDER BY posted_date ASC";
+
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, categoryX);
@@ -504,7 +533,14 @@ public class Database {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         String userId = resultSet.getString("user_id");
-                        usersWithMultipleItems.add(userId);
+                        String category = resultSet.getString("category");
+                        String title = resultSet.getString("title");
+                        String postedDate = resultSet.getString("posted_date");
+
+                        // Build the result string and add it to the list
+                        String result = String.format("User: %s, Category: %s, Title: %s, Posted Date: %s",
+                                userId, category, title, postedDate);
+                        usersWithMultipleItems.add(result);
                     }
                 }
             }
@@ -514,6 +550,262 @@ public class Database {
 
         return usersWithMultipleItems;
     }
+
+    // Three
+    // Method to retrieve items posted by a specific user with only "Excellent" or "Good" comments
+    public List<String> getUsersWithItemsOnlyExcellentOrGood(String username) {
+        List<String> itemsWithPositiveComments = new ArrayList<>();
+
+        try {
+            String sql = "SELECT DISTINCT i.title " +
+                    "FROM item i " +
+                    "JOIN review r ON i.item_id = r.item_id " +
+                    "WHERE i.user_id = ? " +
+                    "AND r.rating IN ('excellent', 'good') " +
+                    "AND NOT EXISTS ( " +
+                    "    SELECT 1 " +
+                    "    FROM review " +
+                    "    WHERE item_id = i.item_id " +
+                    "      AND rating IN ('fair', 'poor') " +
+                    ")";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, username);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String itemName = resultSet.getString("title");
+                        itemsWithPositiveComments.add(itemName);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return itemsWithPositiveComments;
+    }
+
+    // Four
+    // Method to get users who posted the most items on a specific date
+    public List<String> getUsersWithMostItemsOnDate(String specificDate) {
+        List<String> usersWithMostItems = new ArrayList<>();
+
+        try {
+            String sql = "SELECT user_id, COUNT(*) AS item_count "
+                    + "FROM item "
+                    + "WHERE posted_date = ? "
+                    + "GROUP BY user_id "
+                    + "ORDER BY item_count DESC";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, specificDate);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    int maxItemCount = -1;
+
+                    while (resultSet.next()) {
+                        int itemCount = resultSet.getInt("item_count");
+
+                        // If the current count is greater than the max, clear the list and update max
+                        if (itemCount > maxItemCount) {
+                            maxItemCount = itemCount;
+                            usersWithMostItems.clear();
+                        }
+
+                        // Add the user to the list if their count matches the max
+                        if (itemCount == maxItemCount) {
+                            String userId = resultSet.getString("user_id");
+                            usersWithMostItems.add(userId);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return usersWithMostItems;
+    }
+
+    // Five
+    // Method to get other users favorited by both X and Y
+    public List<String> getCommonFavorites(String userX, String userY) {
+        List<String> commonFavorites = new ArrayList<>();
+
+        try {
+            /*
+            user_id_x is equal to userX and user_id_y is equal to userY.
+            user_id_x is equal to userY and user_id_y is equal to userX.
+            */
+            String sql = "SELECT favorite_user_id "
+                    + "FROM favorites "
+                    + "WHERE user_id_x = ? AND user_id_y = ? "
+                    + "OR user_id_x = ? AND user_id_y = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, userX);
+                preparedStatement.setString(2, userY);
+                preparedStatement.setString(3, userY);
+                preparedStatement.setString(4, userX);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String favoriteUser = resultSet.getString("favorite_user_id");
+                        commonFavorites.add(favoriteUser);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return commonFavorites;
+    }
+
+    // Six
+    public List<String> getUsersWithNoExcellentItems() {
+        List<String> usersWithNoExcellentItems = new ArrayList<>();
+
+        try {
+            String sql = "SELECT DISTINCT user_id " +
+                    "FROM item " +
+                    "WHERE item_id NOT IN (" +
+                    "SELECT item_id " +
+                    "FROM review " +
+                    "WHERE rating = 'excellent' " +
+                    "GROUP BY item_id " +
+                    "HAVING COUNT(*) >= 3" +
+                    ")";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    String userId = resultSet.getString("user_id");
+                    usersWithNoExcellentItems.add(userId);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return usersWithNoExcellentItems;
+    }
+
+    // Seven
+    public List<String> getUsersWithoutPoorReviews() {
+        List<String> usersWithoutPoorReviews = new ArrayList<>();
+
+        try {
+            String sql = "SELECT DISTINCT user_id " +
+                    "FROM review " +
+                    "WHERE rating != 'poor'";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    String userId = resultSet.getString("user_id");
+                    usersWithoutPoorReviews.add(userId);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return usersWithoutPoorReviews;
+    }
+
+    // Eight
+    public List<String> getUsersWithOnlyPoorReviews() {
+        List<String> usersWithOnlyPoorReviews = new ArrayList<>();
+
+        try {
+            String sql = "SELECT DISTINCT user_id " +
+                    "FROM review " +
+                    "WHERE rating = 'poor' " +
+                    "AND user_id NOT IN (SELECT DISTINCT user_id FROM review WHERE rating != 'poor')";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    String userId = resultSet.getString("user_id");
+                    usersWithOnlyPoorReviews.add(userId);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return usersWithOnlyPoorReviews;
+    }
+
+    // Nine
+    public List<String> getUsersWithNoPoorReviews() {
+        List<String> usersWithNoPoorReviews = new ArrayList<>();
+
+        try {
+            String sql = "SELECT DISTINCT user_id " +
+                    "FROM item " +
+                    "WHERE item_id NOT IN (" +
+                    "SELECT item_id " +
+                    "FROM review " +
+                    "WHERE rating = 'poor'" +
+                    ")";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    String userId = resultSet.getString("user_id");
+                    usersWithNoPoorReviews.add(userId);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return usersWithNoPoorReviews;
+    }
+
+    // Ten
+    public List<String> getUserPairsWithExcellentReviews() {
+        List<String> userPairsWithExcellentReviews = new ArrayList<>();
+
+        try {
+            String sql = "SELECT DISTINCT f.user_id_x, f.user_id_y " +
+                    "FROM favorites f " +
+                    "JOIN item i ON f.favorite_user_id = i.user_id " +
+                    "WHERE NOT EXISTS (" +
+                    "SELECT r.review_id " +
+                    "FROM review r " +
+                    "WHERE r.item_id = i.item_id AND r.user_id = f.user_id_x AND r.rating != 'excellent'" +
+                    ") AND NOT EXISTS (" +
+                    "SELECT r.review_id " +
+                    "FROM review r " +
+                    "WHERE r.item_id = i.item_id AND r.user_id = f.user_id_y AND r.rating != 'excellent'" +
+                    ")";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    String userX = resultSet.getString("user_id_x");
+                    String userY = resultSet.getString("user_id_y");
+                    String userPair = "(" + userX + ", " + userY + ")";
+                    userPairsWithExcellentReviews.add(userPair);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return userPairsWithExcellentReviews;
+    }
+
+
 
     // Part 3 End
 
@@ -589,7 +881,6 @@ so it treats this as an input to an email.
          posted_date DATE NOT NULL,  -- Add the posted_date column
          FOREIGN KEY (user_id) REFERENCES user(username)
      );
-
 
      CREATE TABLE review (
          review_id INT AUTO_INCREMENT PRIMARY KEY,

@@ -10,24 +10,24 @@
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="2000.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.project.databaseproject.StoreStatsController">
     <center>
-        <AnchorPane fx:id="u1" prefHeight="792.0" prefWidth="1237.0">
+        <AnchorPane prefHeight="792.0" prefWidth="1237.0">
             <children>
                 <Label layoutX="14.0" layoutY="14.0" prefHeight="25.0" prefWidth="237.0" text="1. Most Expensive Items In Each Category" />
-                <TextField fx:id="threeTF" layoutX="293.0" layoutY="262.0" prefHeight="25.0" prefWidth="207.0" />
+                <TextField fx:id="threeTF" layoutX="293.0" layoutY="262.0" onAction="#threeFunction" prefHeight="25.0" prefWidth="207.0" />
                 <Button layoutX="1056.0" layoutY="754.0" mnemonicParsing="false" onAction="#switchToStore" prefHeight="25.0" prefWidth="124.0" text="back" />
             <ListView fx:id="one" layoutX="14.0" layoutY="37.0" prefHeight="200.0" prefWidth="220.0" />
-            <Label layoutX="290.0" layoutY="14.0" prefHeight="41.0" prefWidth="238.0" text="3. All Items Posted By User X such that  comments are excellent and good" wrapText="true" />
+            <Label layoutX="290.0" layoutY="14.0" prefHeight="41.0" prefWidth="238.0" text="3. All Items Posted By User X such that their comments are ONLY  excellent and good" wrapText="true" />
             <ListView fx:id="three" layoutX="290.0" layoutY="72.0" prefHeight="165.0" prefWidth="213.0" />
             <Label layoutX="291.0" layoutY="237.0" prefHeight="25.0" prefWidth="237.0" text="3. Search User X" />
-            <Label layoutX="588.0" layoutY="19.0" prefHeight="41.0" prefWidth="238.0" text="4. User With the most number of items on a specific date" wrapText="true" />
+            <Label layoutX="588.0" layoutY="19.0" prefHeight="41.0" prefWidth="238.0" text="4. Users With the most number of items on a specific date" wrapText="true" />
             <ListView fx:id="four" layoutX="600.0" layoutY="55.0" prefHeight="165.0" prefWidth="213.0" />
-            <TextField fx:id="fourTF" layoutX="602.0" layoutY="250.0" prefHeight="25.0" prefWidth="207.0" />
-            <Label layoutX="600.0" layoutY="225.0" prefHeight="25.0" prefWidth="207.0" text="4. Type date (YYYY-MM-DD " />
-            <Label layoutX="9.0" layoutY="315.0" prefHeight="25.0" prefWidth="267.0" text="6. All Users who never posted an excellent item" />
+            <TextField fx:id="fourTF" layoutX="602.0" layoutY="250.0" onAction="#fourFunction" prefHeight="25.0" prefWidth="207.0" />
+            <Label layoutX="600.0" layoutY="225.0" prefHeight="25.0" prefWidth="207.0" text="4. Type date (YYYY-MM-DD)" />
+            <Label layoutX="9.0" layoutY="259.0" prefHeight="81.0" prefWidth="213.0" text="6. All Users who posted an &quot;excellent&quot; review &lt; 3 times. Which according to the assignment means &quot;never posted an excellent item&quot;." wrapText="true" />
             <ListView fx:id="six" layoutX="16.0" layoutY="340.0" prefHeight="200.0" prefWidth="220.0" />
-            <Label layoutX="276.0" layoutY="342.0" prefHeight="25.0" prefWidth="267.0" text="7. all users who never posted a &quot;poor&quot; review" />
+            <Label layoutX="276.0" layoutY="342.0" prefHeight="25.0" prefWidth="267.0" text="7. all users who NEVER posted a &quot;poor&quot; review" />
             <ListView fx:id="seven" layoutX="283.0" layoutY="367.0" prefHeight="200.0" prefWidth="220.0" />
-            <Label layoutX="559.0" layoutY="342.0" prefHeight="25.0" prefWidth="267.0" text="8. all users who posted a &quot;poor&quot; review" />
+            <Label layoutX="559.0" layoutY="284.0" prefHeight="83.0" prefWidth="267.0" text="8. users who have exclusively posted reviews with a &quot;poor&quot; rating. If a user has a mix of ratings, including at least one &quot;poor&quot; rating, they won't be included in the result" wrapText="true" />
             <ListView fx:id="eight" layoutX="566.0" layoutY="367.0" prefHeight="200.0" prefWidth="220.0" />
             <Label layoutX="14.0" layoutY="548.0" prefHeight="44.0" prefWidth="267.0" text="9. Show users that posted items that have not received reviews or have not gotten any poor reviews." wrapText="true">
                <font>
@@ -36,7 +36,7 @@
             </Label>
             <ListView fx:id="nine" layoutX="21.0" layoutY="592.0" prefHeight="200.0" prefWidth="297.0" />
             <Label layoutX="337.0" layoutY="592.0" prefHeight="44.0" prefWidth="267.0" text="10. 2 users who always gave &quot;excellent reviews for every item they posted." wrapText="true" />
-            <ListView fx:id="nine1" layoutX="337.0" layoutY="633.0" prefHeight="134.0" prefWidth="397.0" />
+            <ListView fx:id="ten" layoutX="337.0" layoutY="633.0" prefHeight="134.0" prefWidth="397.0" />
             <Label layoutX="881.0" layoutY="19.0" prefHeight="41.0" prefWidth="446.0" text="2. List the users who posted atleast 2 items on the same day but from different categories." wrapText="true" />
             <ListView fx:id="two" layoutX="881.0" layoutY="63.0" prefHeight="165.0" prefWidth="829.0" />
             <TextField fx:id="c1" layoutX="883.0" layoutY="258.0" prefHeight="25.0" prefWidth="207.0" />
@@ -50,6 +50,7 @@
             <Label layoutX="890.0" layoutY="548.0" prefHeight="25.0" prefWidth="207.0" text="5. userX" />
             <Label layoutX="1127.0" layoutY="548.0" prefHeight="25.0" prefWidth="207.0" text="5. userY" />
             <Button layoutX="1367.0" layoutY="250.0" mnemonicParsing="false" onAction="#twoFunction" prefHeight="25.0" prefWidth="136.0" text="Submit Categorys" />
+            <Button layoutX="1386.0" layoutY="562.0" mnemonicParsing="false" onAction="#fiveFunction" prefHeight="25.0" prefWidth="136.0" text="Submit Users" />
             </children>
         </AnchorPane>
     </center>
