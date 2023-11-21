@@ -775,18 +775,24 @@ public class Database {
         List<String> userPairsWithExcellentReviews = new ArrayList<>();
 
         try {
+            // Select distinct pairs of user_id_x and user_id_y from the favorites table
+            // that satisfy the conditions mentioned in the WHERE clause.
             String sql = "SELECT DISTINCT f.user_id_x, f.user_id_y " +
                     "FROM favorites f " +
+                    // Join the same user ids from the favorite's table to the same user ids on the item's table
                     "JOIN item i ON f.favorite_user_id = i.user_id " +
                     "WHERE NOT EXISTS (" +
-                    "SELECT r.review_id " +
-                    "FROM review r " +
-                    "WHERE r.item_id = i.item_id AND r.user_id = f.user_id_x AND r.rating != 'excellent'" +
-                    ") AND NOT EXISTS (" +
-                    "SELECT r.review_id " +
-                    "FROM review r " +
-                    "WHERE r.item_id = i.item_id AND r.user_id = f.user_id_y AND r.rating != 'excellent'" +
-                    ")";
+                    // Return a table where userX is not rated excellent
+                        "SELECT r.review_id " +
+                        "FROM review r " +
+                        "WHERE r.item_id = i.item_id AND r.user_id = f.user_id_x AND r.rating != 'excellent'" +
+                        ") AND NOT EXISTS (" +
+                            // Return a table where userY is not rated excellent
+                            "SELECT r.review_id " +
+                            "FROM review r " +
+                            "WHERE r.item_id = i.item_id AND r.user_id = f.user_id_y AND r.rating != 'excellent'" + // Check if items were bought by a user and rating's user is the same in favorite's table but not rated excellent
+                            ")";
+
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
