@@ -24,7 +24,7 @@ public class StoreStatsController {
     @FXML
     ListView<String> one, two, three, four, five, six, seven, eight, nine, ten;
     @FXML
-    TextField c1, c2, threeTF, fourTF, u1, u2;
+    TextField c1, c2, threeTF, fourTF, u1, u2, uX, uY, uZ;
 
 
     @FXML
@@ -113,6 +113,12 @@ public class StoreStatsController {
         List<String> items = database.getUserPairsWithExcellentReviews();
 
         ten.getItems().setAll(items);
+    }
+
+
+    @FXML
+    private void favFunction() {
+        database.addFavorite(uX.getText(), uY.getText(), uZ.getText());
     }
 
 

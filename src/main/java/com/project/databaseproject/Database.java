@@ -302,8 +302,8 @@ public class Database {
                     + "favorite_user_id VARCHAR(255) NOT NULL,"
                     + "FOREIGN KEY (user_id_x) REFERENCES user(username),"
                     + "FOREIGN KEY (user_id_y) REFERENCES user(username),"
-                    + "FOREIGN KEY (favorite_user_id) REFERENCES user(username),"
-                    + "UNIQUE KEY unique_favorite (user_id_x, user_id_y, favorite_user_id)"
+                    + "FOREIGN KEY (favorite_user_id) REFERENCES user(username)," // The user who is favorited by the previous two
+                    + "UNIQUE KEY unique_favorite (user_id_x, user_id_y, favorite_user_id)" // Ensures uniqueness so a user is not favorited by the same combination of people more than once
                     + ")";
             Statement createFavoritesStatement = connection.createStatement();
             createFavoritesStatement.execute(createTableFavoritesSQL);
@@ -812,6 +812,26 @@ public class Database {
     }
 
 
+    // Method to add a favorite relationship between two users
+    public void addFavorite(String userX, String userY, String userZ) {
+        String sql = "INSERT INTO favorites (user_id_x, user_id_y, favorite_user_id) VALUES (?, ?, ?)";
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, userX);
+            statement.setString(2, userY);
+            statement.setString(3, userZ); // userZ favorited by userX and userY
+
+            int rowsInserted = statement.executeUpdate();
+
+            if (rowsInserted > 0) {
+                System.out.println("Favorite relationship added successfully.");
+            } else {
+                System.out.println("Failed to add favorite relationship.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     // Part 3 End
 

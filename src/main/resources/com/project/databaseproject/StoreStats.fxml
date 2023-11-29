@@ -14,7 +14,7 @@
             <children>
                 <Label layoutX="14.0" layoutY="14.0" prefHeight="25.0" prefWidth="237.0" text="1. Most Expensive Items In Each Category" />
                 <TextField fx:id="threeTF" layoutX="293.0" layoutY="262.0" onAction="#threeFunction" prefHeight="25.0" prefWidth="207.0" />
-                <Button layoutX="1056.0" layoutY="754.0" mnemonicParsing="false" onAction="#switchToStore" prefHeight="25.0" prefWidth="124.0" text="back" />
+                <Button layoutX="844.0" layoutY="742.0" mnemonicParsing="false" onAction="#switchToStore" prefHeight="25.0" prefWidth="404.0" text="back" />
             <ListView fx:id="one" layoutX="14.0" layoutY="37.0" prefHeight="200.0" prefWidth="220.0" />
             <Label layoutX="290.0" layoutY="14.0" prefHeight="41.0" prefWidth="238.0" text="3. All Items Posted By User X such that their comments are ONLY  excellent and good" wrapText="true" />
             <ListView fx:id="three" layoutX="290.0" layoutY="72.0" prefHeight="165.0" prefWidth="213.0" />
@@ -51,6 +51,18 @@
             <Label layoutX="1127.0" layoutY="548.0" prefHeight="25.0" prefWidth="207.0" text="5. userY" />
             <Button layoutX="1367.0" layoutY="250.0" mnemonicParsing="false" onAction="#twoFunction" prefHeight="25.0" prefWidth="136.0" text="Submit Categorys" />
             <Button layoutX="1386.0" layoutY="562.0" mnemonicParsing="false" onAction="#fiveFunction" prefHeight="25.0" prefWidth="136.0" text="Submit Users" />
+            <TextField fx:id="uX" layoutX="1200.0" layoutY="675.0" prefHeight="25.0" prefWidth="207.0" />
+            <TextField fx:id="uY" layoutX="1437.0" layoutY="675.0" prefHeight="25.0" prefWidth="207.0" />
+            <Label layoutX="1199.0" layoutY="649.0" prefHeight="25.0" prefWidth="207.0" text="uX" />
+            <Label layoutX="1436.0" layoutY="649.0" prefHeight="25.0" prefWidth="207.0" text="uY" />
+            <Label layoutX="857.0" layoutY="655.0" prefHeight="41.0" prefWidth="315.0" text="userX and userY Favorite A User" wrapText="true">
+               <font>
+                  <Font name="System Bold" size="17.0" />
+               </font>
+            </Label>
+            <Button layoutX="1694.0" layoutY="684.0" mnemonicParsing="false" onAction="#favFunction" prefHeight="25.0" prefWidth="136.0" text="Favorite Button" />
+            <TextField fx:id="uZ" layoutX="1445.0" layoutY="743.0" prefHeight="25.0" prefWidth="207.0" />
+            <Label layoutX="1444.0" layoutY="717.0" prefHeight="25.0" prefWidth="207.0" text="favoritedUser" />
             </children>
         </AnchorPane>
     </center>
