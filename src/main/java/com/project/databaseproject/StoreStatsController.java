@@ -96,7 +96,7 @@ public class StoreStatsController {
 
     @FXML
     private void eightFunction() {
-        List<String> items = database.getUsersWithOnlyPoorReviews();
+        List<String> items = database.getUsersWithOnlyPoorRatings();
 
         eight.getItems().setAll(items);
     }
@@ -110,7 +110,7 @@ public class StoreStatsController {
 
     @FXML
     private void tenFunction() {
-        List<String> items = database.getUserPairsWithExcellentReviews();
+        List<String> items = database.getUsersWithAlwaysExcellentReviews();
 
         ten.getItems().setAll(items);
     }

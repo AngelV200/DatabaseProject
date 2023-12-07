@@ -23,7 +23,7 @@
             <ListView fx:id="four" layoutX="600.0" layoutY="55.0" prefHeight="165.0" prefWidth="213.0" />
             <TextField fx:id="fourTF" layoutX="602.0" layoutY="250.0" onAction="#fourFunction" prefHeight="25.0" prefWidth="207.0" />
             <Label layoutX="600.0" layoutY="225.0" prefHeight="25.0" prefWidth="207.0" text="4. Type date (YYYY-MM-DD)" />
-            <Label layoutX="9.0" layoutY="259.0" prefHeight="81.0" prefWidth="213.0" text="6. All Users who posted an &quot;excellent&quot; review &lt; 3 times. Which according to the assignment means &quot;never posted an excellent item&quot;." wrapText="true" />
+            <Label layoutX="9.0" layoutY="259.0" prefHeight="81.0" prefWidth="213.0" text="6. Display all the users who never posted any &quot;excellent&quot; items: an item is excellent if at least three reviews are excellent." wrapText="true" />
             <ListView fx:id="six" layoutX="16.0" layoutY="340.0" prefHeight="200.0" prefWidth="220.0" />
             <Label layoutX="276.0" layoutY="342.0" prefHeight="25.0" prefWidth="267.0" text="7. all users who NEVER posted a &quot;poor&quot; review" />
             <ListView fx:id="seven" layoutX="283.0" layoutY="367.0" prefHeight="200.0" prefWidth="220.0" />

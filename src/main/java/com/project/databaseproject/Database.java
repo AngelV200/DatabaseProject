@@ -172,24 +172,42 @@ public class Database {
 
     public void insertReview(Date reportDate, String rating, String description, int itemId, String userId) {
         try {
-            String insertReviewSQL = "INSERT INTO review (report_date, rating, description, item_id, user_id) VALUES (?, ?, ?, ?, ?)";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(insertReviewSQL)) {
-                preparedStatement.setDate(1, reportDate);
-                preparedStatement.setString(2, rating);
-                preparedStatement.setString(3, description);
-                preparedStatement.setInt(4, itemId);
-                preparedStatement.setString(5, userId);
+            // Check the number of reviews posted by the user on the current day
+            String countReviewsSQL = "SELECT COUNT(*) FROM review WHERE user_id = ? AND DATE(report_date) = ?";
+            try (PreparedStatement countStatement = connection.prepareStatement(countReviewsSQL)) {
+                countStatement.setString(1, userId);
+                countStatement.setDate(2, reportDate);
 
-                System.out.println(reportDate + "-" + rating + "-" + description + "-" + itemId + "-" + userId);
+                try (ResultSet resultSet = countStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        int reviewCount = resultSet.getInt(1);
 
-                preparedStatement.executeUpdate();
-                System.out.println("Review inserted successfully.");
+                        // Allow posting the review if the user has posted fewer than 3 reviews
+                        if (reviewCount < 3) {
+                            // Insert the new review
+                            String insertReviewSQL = "INSERT INTO review (report_date, rating, description, item_id, user_id) VALUES (?, ?, ?, ?, ?)";
+                            try (PreparedStatement preparedStatement = connection.prepareStatement(insertReviewSQL)) {
+                                preparedStatement.setDate(1, reportDate);
+                                preparedStatement.setString(2, rating);
+                                preparedStatement.setString(3, description);
+                                preparedStatement.setInt(4, itemId);
+                                preparedStatement.setString(5, userId);
+
+                                preparedStatement.executeUpdate();
+                                System.out.println("Review inserted successfully.");
+                            }
+                        } else {
+                            System.out.println("You can only post 3 reviews a day.");
+                        }
+                    }
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("Error inserting review: " + e.getMessage());
         }
     }
+
 
 
     public int getItemIdByAttributes(String title, String description, String category, int price, String userId) {
@@ -310,10 +328,10 @@ public class Database {
             createFavoritesStatement.close();
 
             // Insert sample data into the tables
-            insertSampleUserData(200);
-            insertSampleItemData(200);
-            insertSampleReviewData(200);
-            insertSampleFavoritesData(200);
+            insertSampleUserData(3);
+            insertSampleItemData(3);
+            insertSampleReviewData(3);
+            insertSampleFavoritesData(3);
 
             System.out.println("Database initialized.");
 
@@ -402,29 +420,29 @@ public class Database {
         executeSQLStatement(insertItemSQL.toString());
     }
 
-    private void insertSampleReviewData(int numUsers) {
+    private void insertSampleReviewData(int numTuples) {
         StringBuilder insertReviewSQL = new StringBuilder("INSERT INTO review (report_date, rating, description, item_id, user_id) VALUES ");
 
         Random random = new Random();
 
-        for (int userId = 1; userId <= numUsers; userId++) {
-            int maxReviewsPerUser = random.nextInt(10) + 1; // Random maximum reviews per user
+        for (int i = 1; i <= numTuples; i++) {
+            int day = (i % 3) + 1;
 
-            int numReviews = random.nextInt(maxReviewsPerUser) + 1; // Random number of reviews per user
+            // Randomized review types with equal probability
+            String[] reviewTypes = {"poor", "excellent", "good", "fair"};
+            String rating = reviewTypes[random.nextInt(reviewTypes.length)];
 
-            for (int reviewIndex = 1; reviewIndex <= numReviews; reviewIndex++) {
-                int day = (reviewIndex % 3) + 1;
+            // Ensure that the review is associated with the user's own items
+            int itemId = i;
 
-                // Randomized review types with equal probability
-                String[] reviewTypes = {"poor", "excellent", "good", "fair"};
-                String rating = reviewTypes[random.nextInt(reviewTypes.length)];
-
+            // Generate three reviews for each user's items
+            for (int j = 0; j < 3; j++) {
                 insertReviewSQL.append(String.format(
-                        "('2023-11-%02d', '%s', 'Review%d by user%d', %d, 'user%d')",
-                        day, rating, reviewIndex, userId, userId, userId
+                        "('2023-11-%02d', '%s', 'Review%d by user%d for Item%d', %d, 'user%d')",
+                        day, rating, j + 1, i, itemId, itemId, i
                 ));
 
-                if (userId < numUsers || reviewIndex < numReviews) {
+                if (i < numTuples || j < 2) {
                     insertReviewSQL.append(", ");
                 }
             }
@@ -432,6 +450,8 @@ public class Database {
 
         executeSQLStatement(insertReviewSQL.toString());
     }
+
+
 
 
 
@@ -667,31 +687,36 @@ public class Database {
     public List<String> getUsersWithNoExcellentItems() {
         List<String> usersWithNoExcellentItems = new ArrayList<>();
 
-        try {
-            String sql = "SELECT DISTINCT user_id " +
-                    "FROM item " +
-                    "WHERE item_id NOT IN (" +
-                    "SELECT item_id " +
-                    "FROM review " +
-                    "WHERE rating = 'excellent' " +
-                    "GROUP BY item_id " +
-                    "HAVING COUNT(*) >= 3" +
+        try  {
+            // Query to get users who never posted any "excellent" items
+            String sql = "SELECT u.username " +
+                    "FROM user u " +
+                    "WHERE NOT EXISTS (" +
+                    "    SELECT 1 " +
+                    "    FROM item i " +
+                    "    LEFT JOIN review r ON i.item_id = r.item_id AND r.rating = 'excellent' " +
+                    "    WHERE i.user_id = u.username " +
+                    "    GROUP BY i.item_id " +
+                    "    HAVING COUNT(r.review_id) >= 3" +
                     ")";
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-
-                while (resultSet.next()) {
-                    String userId = resultSet.getString("user_id");
-                    usersWithNoExcellentItems.add(userId);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String username = resultSet.getString("username");
+                        usersWithNoExcellentItems.add(username);
+                    }
                 }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         return usersWithNoExcellentItems;
     }
+
+
 
     // Seven
     public List<String> getUsersWithoutPoorReviews() {
@@ -718,29 +743,37 @@ public class Database {
     }
 
     // Eight
-    public List<String> getUsersWithOnlyPoorReviews() {
-        List<String> usersWithOnlyPoorReviews = new ArrayList<>();
+    public List<String> getUsersWithOnlyPoorRatings() {
+        List<String> usersWithOnlyPoorRatings = new ArrayList<>();
 
-        try {
-            String sql = "SELECT DISTINCT user_id " +
-                    "FROM review " +
-                    "WHERE rating = 'poor' " +
-                    "AND user_id NOT IN (SELECT DISTINCT user_id FROM review WHERE rating != 'poor')";
+        try  {
+            // Query to get users with only "poor" ratings
+            String sql = "SELECT DISTINCT u.username " +
+                    "FROM user u " +
+                    "JOIN review r ON u.username = r.user_id " +
+                    "WHERE NOT EXISTS (" +
+                    "    SELECT 1 " +
+                    "    FROM review r2 " +
+                    "    WHERE r2.user_id = u.username " +
+                    "      AND r2.rating <> 'poor'" +
+                    ")";
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-
-                while (resultSet.next()) {
-                    String userId = resultSet.getString("user_id");
-                    usersWithOnlyPoorReviews.add(userId);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String username = resultSet.getString("username");
+                        usersWithOnlyPoorRatings.add(username);
+                    }
                 }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return usersWithOnlyPoorReviews;
+        return usersWithOnlyPoorRatings;
     }
+
 
     // Nine
     public List<String> getUsersWithNoPoorReviews() {
@@ -771,44 +804,36 @@ public class Database {
     }
 
     // Ten
-    public List<String> getUserPairsWithExcellentReviews() {
-        List<String> userPairsWithExcellentReviews = new ArrayList<>();
+    public List<String> getUsersWithAlwaysExcellentReviews() {
+        List<String> userPairs = new ArrayList<>();
 
         try {
-            // Select distinct pairs of user_id_x and user_id_y from the favorites table
-            // that satisfy the conditions mentioned in the WHERE clause.
-            String sql = "SELECT DISTINCT f.user_id_x, f.user_id_y " +
-                    "FROM favorites f " +
-                    // Join the same user ids from the favorite's table to the same user ids on the item's table
-                    "JOIN item i ON f.favorite_user_id = i.user_id " +
-                    "WHERE NOT EXISTS (" +
-                    // Return a table where userX is not rated excellent
-                        "SELECT r.review_id " +
-                        "FROM review r " +
-                        "WHERE r.item_id = i.item_id AND r.user_id = f.user_id_x AND r.rating != 'excellent'" +
-                        ") AND NOT EXISTS (" +
-                            // Return a table where userY is not rated excellent
-                            "SELECT r.review_id " +
-                            "FROM review r " +
-                            "WHERE r.item_id = i.item_id AND r.user_id = f.user_id_y AND r.rating != 'excellent'" + // Check if items were bought by a user and rating's user is the same in favorite's table but not rated excellent
-                            ")";
+            // Query to get user pairs who always gave each other "excellent" reviews
+            String sql = "SELECT u1.username AS user1, u2.username AS user2 " +
+                    "FROM user u1, user u2 " +
+                    "WHERE u1.username < u2.username AND NOT EXISTS (" +
+                    "    SELECT 1 " +
+                    "    FROM item i " +
+                    "    LEFT JOIN review r1 ON i.item_id = r1.item_id AND r1.user_id = u1.username AND r1.rating <> 'excellent' " +
+                    "    LEFT JOIN review r2 ON i.item_id = r2.item_id AND r2.user_id = u2.username AND r2.rating <> 'excellent' " +
+                    "    WHERE r1.review_id IS NOT NULL OR r2.review_id IS NOT NULL" +
+                    ")";
 
-
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-
-                while (resultSet.next()) {
-                    String userX = resultSet.getString("user_id_x");
-                    String userY = resultSet.getString("user_id_y");
-                    String userPair = "(" + userX + ", " + userY + ")";
-                    userPairsWithExcellentReviews.add(userPair);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String user1 = resultSet.getString("user1");
+                        String user2 = resultSet.getString("user2");
+                        userPairs.add("(" + user1 + ", " + user2 + ")");
+                    }
                 }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return userPairsWithExcellentReviews;
+        return userPairs;
     }
 
 
